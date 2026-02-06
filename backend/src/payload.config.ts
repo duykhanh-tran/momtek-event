@@ -24,15 +24,16 @@ export default buildConfig({
     Media,
     Lessons
   ],
-  csrf: [
-    'http://localhost:3000', 
-    process.env.PAYLOAD_PUBLIC_SERVER_URL || '', 
-  ].filter(Boolean), 
-
   cors: [
     'http://localhost:3000',
-    process.env.PAYLOAD_PUBLIC_SERVER_URL || '',
-  ].filter(Boolean),
+    'http://localhost:3001',
+    'https://momtek-event-frontend.vercel.app', 
+  ],
+  csrf: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://momtek-event-frontend.vercel.app', 
+  ],
   
   editor: lexicalEditor(),
 
