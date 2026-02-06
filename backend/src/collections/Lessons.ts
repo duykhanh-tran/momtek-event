@@ -93,8 +93,7 @@ export const Lessons: CollectionConfig = {
       type: 'array',
       minRows: 1,
       admin: {
-        initCollapsed: false, // Giữ lại dòng này để danh sách luôn mở
-        // Đã xóa phần RowLabel gây lỗi đỏ
+        initCollapsed: false, 
       },
       fields: [
         {
