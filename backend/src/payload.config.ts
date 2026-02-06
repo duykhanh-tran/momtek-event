@@ -7,7 +7,7 @@ import sharp from 'sharp'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-import  Lessons  from './collections/Lessons'
+import { Lessons } from './collections/Lessons' 
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -26,18 +26,26 @@ export default buildConfig({
   ],
   csrf: [
     'http://localhost:3000', 
-  ],
+    process.env.PAYLOAD_PUBLIC_SERVER_URL || '', 
+  ].filter(Boolean), 
+
   cors: [
     'http://localhost:3000',
-  ],
+    process.env.PAYLOAD_PUBLIC_SERVER_URL || '',
+  ].filter(Boolean),
+  
   editor: lexicalEditor(),
+
   secret: process.env.PAYLOAD_SECRET || '',
+  
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
+  
   db: mongooseAdapter({
     url: process.env.DATABASE_URI || '',
   }),
+  
   sharp,
   plugins: [],
 })

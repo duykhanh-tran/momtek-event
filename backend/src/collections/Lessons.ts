@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-const Lessons: CollectionConfig = {
+export const Lessons: CollectionConfig = {
   slug: 'lessons',
   admin: {
     useAsTitle: 'description', 
