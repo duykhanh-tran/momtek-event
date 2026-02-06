@@ -3,11 +3,11 @@ import type { CollectionConfig } from 'payload'
 export const Lessons: CollectionConfig = {
   slug: 'lessons',
   admin: {
-    useAsTitle: 'description', 
+    useAsTitle: 'description',
   },
   access: {
     read: () => true,
-    create: () => true, 
+    create: () => true,
     update: () => true,
     delete: () => true,
   },
@@ -20,7 +20,7 @@ export const Lessons: CollectionConfig = {
     },
     {
       name: 'description',
-      label: 'Tên bài tập', 
+      label: 'Tên bài tập',
       type: 'text',
       required: true,
     },
@@ -36,22 +36,22 @@ export const Lessons: CollectionConfig = {
         beforeValidate: [
           ({ value, data }) => {
             if (!value && data?.description) {
-              return data.description.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+              return data.description.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
             }
-            return value;
+            return value
           },
         ],
       },
     },
     {
-        name: 'isFree',
-        label: 'Học thử miễn phí',
-        type: 'checkbox',
-        defaultValue: false,
-        admin: {
-            position: 'sidebar',
-            description: 'Check vào đây nếu muốn bài này mở công khai cho tất cả mọi người.',
-        },
+      name: 'isFree',
+      label: 'Học thử miễn phí',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Check vào đây nếu muốn bài này mở công khai cho tất cả mọi người.',
+      },
     },
     {
       name: 'lyrics',
@@ -85,13 +85,17 @@ export const Lessons: CollectionConfig = {
       type: 'text',
       admin: {
         description: 'Đường link sẽ mở ra khi bấm nút dưới video',
-      }
+      },
     },
     {
       name: 'content',
       label: 'Nội dung luyện tập',
       type: 'array',
       minRows: 1,
+      admin: {
+        initCollapsed: false, // Giữ lại dòng này để danh sách luôn mở
+        // Đã xóa phần RowLabel gây lỗi đỏ
+      },
       fields: [
         {
           name: 'phrase',
@@ -123,7 +127,4 @@ export const Lessons: CollectionConfig = {
       ],
     },
   ],
-};
-
-export default Lessons;
-
+}
