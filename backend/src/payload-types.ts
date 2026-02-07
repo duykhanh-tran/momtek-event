@@ -170,6 +170,10 @@ export interface Lesson {
   title: string;
   description: string;
   /**
+   * Nhập ngày hiển thị trên lịch (VD: 9, 10, ... 22).
+   */
+  day?: number | null;
+  /**
    * Tự động sinh ra từ Tên bài tập (để làm link)
    */
   slug?: string | null;
@@ -324,6 +328,7 @@ export interface MediaSelect<T extends boolean = true> {
 export interface LessonsSelect<T extends boolean = true> {
   title?: T;
   description?: T;
+  day?: T;
   slug?: T;
   isFree?: T;
   lyrics?: T;

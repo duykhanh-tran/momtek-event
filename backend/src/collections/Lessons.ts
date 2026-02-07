@@ -4,6 +4,7 @@ export const Lessons: CollectionConfig = {
   slug: 'lessons',
   admin: {
     useAsTitle: 'description',
+    defaultColumns: ['description', 'day', 'isFree', 'updatedAt'],
   },
   access: {
     read: () => true,
@@ -23,6 +24,16 @@ export const Lessons: CollectionConfig = {
       label: 'Tên bài tập',
       type: 'text',
       required: true,
+    },
+    {
+      name: 'day',
+      label: 'Ngày học (Lịch Tết)',
+      type: 'number',
+      index: true, 
+      admin: {
+        position: 'sidebar',
+        description: 'Nhập ngày hiển thị trên lịch (VD: 9, 10, ... 22).',
+      },
     },
     {
       name: 'slug',

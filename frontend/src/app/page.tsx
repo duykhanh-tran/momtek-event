@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { getLessons } from '@/lib/api'; 
-import { Lock, Sparkles, Star  } from 'lucide-react'; 
+import { Lock, Sparkles, Star } from 'lucide-react'; 
 import TeacherAvatar from '@/components/TeacherAvatar'; 
 
 export const dynamic = 'force-dynamic';
@@ -9,23 +9,29 @@ export const dynamic = 'force-dynamic';
 export default async function TetHolidayPage() {
   const lessons = await getLessons();
 
+  // Cấu hình khung lịch cố định
   const calendarConfig = [
-    { date: 9, label: 'THỨ 2' }, { date: 10, label: 'THỨ 3' },
-    { date: 11, label: 'THỨ 4' }, { date: 12, label: 'THỨ 5' },
-    { date: 13, label: 'THỨ 6' }, { date: 14, label: 'THỨ 7' },
+    { date: 0, label: 'Demo' },
+    { date: 11, label: 'THỨ 4' },
+    { date: 12, label: 'THỨ 5' },
+    { date: 13, label: 'THỨ 6' }, 
+    { date: 14, label: 'THỨ 7' },
     { date: 15, label: 'CHỦ NHẬT' },
-    { date: 16, label: 'THỨ 2' }, { date: 17, label: 'THỨ 3' },
-    { date: 18, label: 'THỨ 4' }, { date: 19, label: 'THỨ 5' },
-    { date: 20, label: 'THỨ 6' }, { date: 21, label: 'THỨ 7' },
+    { date: 16, label: 'THỨ 2' }, 
+    { date: 17, label: 'THỨ 3' },
+    { date: 18, label: 'THỨ 4' },
+     { date: 19, label: 'THỨ 5' },
+    { date: 20, label: 'THỨ 6' },
+     { date: 21, label: 'THỨ 7' },
     { date: 22, label: 'CHỦ NHẬT' },
   ];
-
-  const roadmapData = calendarConfig.map((day, index) => {
-    const lesson = lessons[index]; 
+  const roadmapData = calendarConfig.map((dayItem) => {
+    const lesson = lessons.find((l: any) => l.day === dayItem.date);
+    
     const isUnlocked = lesson && lesson.isFree; 
     
     return {
-      ...day,
+      ...dayItem,
       lessonSlug: lesson?.slug,
       lessonTitle: lesson?.description,
       isLocked: !isUnlocked,
@@ -58,16 +64,32 @@ export default async function TetHolidayPage() {
 
           <p className="text-sm md:text-lg max-w-2xl leading-relaxed opacity-90 mb-8 font-medium px-2">
             Đừng để Tết làm gián đoạn hứng khởi học tập của con! <br className="hidden md:block" />
-            Cùng <span className="font-bold text-yellow-300">Momtek</span> làm chủ bộ từ vựng Tết qua 14 bài hát kinh điển.
+            Cùng <span className="font-bold text-yellow-300">Momtek</span> làm chủ bộ từ vựng Tết qua 12 bài hát kinh điển.
           </p>
 
-          <div className="flex flex-col items-center gap-2 scale-90 md:scale-100">
-            <TeacherAvatar />
-            <div className="text-center">
-              <div className="font-bold text-base text-yellow-100">Teacher. Mai Linh</div>
-              <div className="text-[10px] tracking-widest uppercase opacity-75 bg-black/20 px-2 py-0.5 rounded-full mt-1">Founder Momtek</div>
+          <div className="flex flex-row justify-center items-start gap-6 md:gap-8 mt-4">
+            
+            {/* Teacher 1: Mai Linh */}
+            <div className="flex flex-col items-center gap-2 scale-90 md:scale-100 group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
+              <TeacherAvatar src="/images/FD.jpg" alt="Mai Linh" />
+              <div className="text-center">
+                <div className="font-bold text-sm md:text-base text-yellow-100">Teacher. Mai Linh</div>
+                <div className="text-[10px] tracking-widest uppercase opacity-75 bg-black/20 px-2 py-0.5 rounded-full mt-1">Founder Momtek</div>
+              </div>
             </div>
+
+            {/* Teacher 2: Hoàng Tăng Đức */}
+            <div className="flex flex-col items-center gap-2 scale-90 md:scale-100 group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
+              {/* Bạn nhớ thêm ảnh duc.jpg vào thư mục public/images nhé */}
+              <TeacherAvatar src="/images/FD2.jpg" alt="Hoàng Tăng Đức" />
+              <div className="text-center">
+                <div className="font-bold text-sm md:text-base text-yellow-100">Th. Hoàng Tăng Đức</div>
+                <div className="text-[10px] tracking-widest uppercase opacity-75 bg-black/20 px-2 py-0.5 rounded-full mt-1">Founder Momtek</div>
+              </div>
+            </div>
+
           </div>
+                
         </div>
       </section>
 
@@ -79,31 +101,28 @@ export default async function TetHolidayPage() {
              <span className="text-[10px] md:text-xs font-bold uppercase">Lì xì kiến thức đầu năm</span>
           </div>
           <h3 className="text-slate-800 text-xl md:text-4xl font-black uppercase mb-2">
-            Lộ trình <span className="text-[#D93838]">14 ngày</span> xuyên Tết
+            Lộ trình <span className="text-[#D93838]">12 ngày</span> xuyên Tết
           </h3>
           <p className="text-slate-500 text-xs md:text-base">
             Mỗi ngày 1 bài hát và 6 từ + câu luyện âm AI
           </p>
         </div>
-
-        {/* Responsive Grid: 2 cols (mobile) -> 3 cols -> 4 cols -> 7 cols (desktop) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 md:gap-6">
           {roadmapData.map((day, index) => {
              const isClickable = !day.isLocked && day.lessonSlug;
 
-             return (
-                isClickable ? (
+             const Wrapper = isClickable ? Link : 'div';
+             const wrapperProps = isClickable ? { href: `/learn/${day.lessonSlug}` } : {};
+
+             return isClickable ? (
                 <Link
                   key={index}
-                  href={`/learn/${day.lessonSlug}`}
+                  href={wrapperProps.href as string}
                   className={`
                     relative group rounded-xl md:rounded-2xl border-2 flex flex-col items-center justify-center 
                     py-4 px-2 md:py-6 md:px-2 transition-all duration-300 min-h-[100px] md:min-h-[140px]
-                    ${isClickable ? 'cursor-pointer' : 'cursor-default'}
-                    ${!day.isLocked 
-                      ? 'bg-[#FFFAE8] border-[#E8D080] shadow-sm md:shadow-md hover:-translate-y-1 hover:shadow-xl hover:border-[#D93838]'
-                      : 'bg-white border-slate-100 grayscale opacity-80'
-                    }
+                    cursor-pointer
+                    bg-[#FFFAE8] border-[#E8D080] shadow-sm md:shadow-md hover:-translate-y-1 hover:shadow-xl hover:border-[#D93838]
                   `}
                 >
                   {day.isLocked && (
@@ -118,6 +137,8 @@ export default async function TetHolidayPage() {
                   `}>
                     {day.label}
                   </span>
+
+                   
 
                   <span className={`
                     text-2xl md:text-4xl font-black mb-1 md:mb-2
@@ -139,17 +160,14 @@ export default async function TetHolidayPage() {
                       <span className="text-[9px] text-slate-400 italic">Trống</span>
                   )}
                 </Link>
-                ) : (
+             ) : (
                 <div
                   key={index}
                   className={`
                     relative group rounded-xl md:rounded-2xl border-2 flex flex-col items-center justify-center 
                     py-4 px-2 md:py-6 md:px-2 transition-all duration-300 min-h-[100px] md:min-h-[140px]
-                    ${isClickable ? 'cursor-pointer' : 'cursor-default'}
-                    ${!day.isLocked 
-                      ? 'bg-[#FFFAE8] border-[#E8D080] shadow-sm md:shadow-md hover:-translate-y-1 hover:shadow-xl hover:border-[#D93838]'
-                      : 'bg-white border-slate-100 grayscale opacity-80'
-                    }
+                    cursor-default
+                    bg-white border-slate-100 grayscale opacity-80
                   `}
                 >
                   {day.isLocked && (
@@ -185,7 +203,6 @@ export default async function TetHolidayPage() {
                       <span className="text-[9px] text-slate-400 italic">Trống</span>
                   )}
                 </div>
-                )
              );
           })}
         </div>

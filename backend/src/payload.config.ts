@@ -14,7 +14,7 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || '', 
-
+  
   admin: {
     user: Users.slug,
     importMap: {
@@ -26,16 +26,23 @@ export default buildConfig({
     Media,
     Lessons
   ],
+  
   cors: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'https://momtek-event-frontend.vercel.app', 
-  ],
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'https://momtek-event-frontend.vercel.app',  
+    'https://momtek.vn',
+    'https://www.momtek.vn',
+    process.env.PAYLOAD_PUBLIC_SERVER_URL || '',
+  ].filter(Boolean) as string[], 
   csrf: [
     'http://localhost:3000',
     'http://localhost:3001',
     'https://momtek-event-frontend.vercel.app', 
-  ],
+    'https://momtek.vn',
+    'https://www.momtek.vn',
+    process.env.PAYLOAD_PUBLIC_SERVER_URL || '',
+  ].filter(Boolean) as string[],
   
   editor: lexicalEditor(),
 

@@ -97,11 +97,25 @@ const VideoPlayerSection = ({
                   shadow-xl hover:-translate-y-1 hover:shadow-2xl hover:bg-yellow-50
                 "
               >
-                <span>XEM CHI TIẾT SẢN PHẨM</span>
+                <svg 
+                  viewBox="0 0 24 24" 
+                  fill="currentColor" 
+                  className="w-5 h-5 md:w-6 md:h-6 text-[#ff0050] group-hover:animate-pulse" // Màu đỏ đặc trưng TikTok hoặc trắng
+                >
+                  <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/>
+                </svg>
+                <span>HÃY FOLLOW KÊNH MOMTEK’S SONG</span>
                 <ExternalLink className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </a>
            </div>
         )}
+        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center my-6">
+          <p className="text-white text-[10px] md:text-sm text-center leading-relaxed italic">
+            Momtek's Song là kênh Tiktok chuyên các nội dung học tiếng Anh qua bài hát. Vui, đơn giản, hiệu quả.
+            <br />
+            Kênh được cô Mai Linh và Thầy Hoàng Tăng Đức thẩm định nội dung.
+          </p>
+        </div>
 
         {/* Lyrics: Giao diện thẻ trắng sạch sẽ */}
         <div className="bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl shadow-xl overflow-hidden transition-all duration-300 border border-white/20">

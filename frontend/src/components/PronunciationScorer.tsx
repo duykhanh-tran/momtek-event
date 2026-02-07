@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Square, RefreshCcw, Trophy, Loader2, ArrowRight, AlertTriangle, RotateCcw, Frown, Sparkles } from 'lucide-react';
+import { Mic, Square, RefreshCcw, Trophy, Loader2, ArrowRight, AlertTriangle, CheckCircle2, RotateCcw, Frown, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as SpeechSDK from 'microsoft-cognitiveservices-speech-sdk';
 import { ContentItem } from '@/types/lesson'; 
@@ -25,15 +25,20 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
   const [calculatedMetrics, setCalculatedMetrics] = useState({ completeness: 0, accuracy: 0, fluency: 0 });
 
   const recognizerRef = useRef<SpeechSDK.SpeechRecognizer | null>(null);
+  
+  // --- THÊM REF ĐỂ QUẢN LÝ TIMEOUT ---
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null); 
+  
   const currentSentence = sentences[currentIndex];
 
   useEffect(() => {
     return () => {
       if (recognizerRef.current) recognizerRef.current.close();
+      // Clear timeout khi thoát component
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
 
-  // --- LOGIC GIỮ NGUYÊN ---
   const processStrictResult = (jsonResult: any) => {
     if (!jsonResult || !jsonResult.NBest || !jsonResult.NBest[0]) return 0;
     const nbest = jsonResult.NBest[0];
@@ -87,9 +92,13 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
 
       const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
       speechConfig.speechRecognitionLanguage = "en-US";
+      
+      // Cấu hình Output Format
       speechConfig.outputFormat = SpeechSDK.OutputFormat.Detailed;
-      speechConfig.setProperty(SpeechSDK.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "5000");
-      speechConfig.setProperty(SpeechSDK.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, "3000");
+      
+      // Tinh chỉnh timeout silence của SDK (để nó tự ngắt nếu im lặng)
+      speechConfig.setProperty(SpeechSDK.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "3000");
+      speechConfig.setProperty(SpeechSDK.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, "2000");
 
       const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
       const pronunciationConfig = new SpeechSDK.PronunciationAssessmentConfig(
@@ -118,7 +127,21 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
 
       recognizer.canceled = (s, e) => { stopRecording(); };
       recognizer.sessionStopped = (s, e) => { stopRecording(); };
-      recognizer.startContinuousRecognitionAsync();
+      
+      // Bắt đầu ghi âm
+      recognizer.startContinuousRecognitionAsync(() => {
+          console.log("Đã bắt đầu thu âm...");
+          
+          // --- LOGIC MỚI: TỰ ĐỘNG DỪNG SAU 8 GIÂY ---
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          
+          timeoutRef.current = setTimeout(() => {
+              console.log("Hết thời gian (8s), tự động dừng...");
+              stopRecording();
+          }, 8000); // 8000ms = 8 giây
+          // -------------------------------------------
+      });
+      
       recognizerRef.current = recognizer;
 
     } catch (error) {
@@ -130,6 +153,11 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
   };
 
   const stopRecording = () => {
+    if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+    }
+
     setIsRecording(false);
     if (recognizerRef.current) {
       recognizerRef.current.stopContinuousRecognitionAsync();
@@ -207,7 +235,6 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
 
   const isMissingWords = calculatedMetrics.completeness < 100;
 
-  // --- RESULT SCREEN ---
   if (lessonComplete) {
     const totalScore = lessonScores.reduce((a, b) => a + b, 0);
     const averageScore = Math.round(totalScore / sentences.length);
@@ -221,7 +248,6 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
                 animate={{ scale: 1, opacity: 1 }}
                 className={`rounded-[40px] shadow-2xl p-8 md:p-12 text-center border-[6px] ${isPassed ? 'bg-white border-green-100' : 'bg-white border-red-50'}`}
             >
-                {/* Result Icon */}
                 <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center mx-auto mb-6 ${isPassed ? 'bg-green-50' : 'bg-red-50'}`}>
                     {isPassed ? <Trophy className="w-12 h-12 md:w-16 md:h-16 text-green-500 animate-bounce" /> : <Frown className="w-12 h-12 md:w-16 md:h-16 text-red-400" />}
                 </div>
@@ -256,12 +282,9 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
     );
   }
 
-  // --- PRACTICE SCREEN ---
   return (
     <section className="py-2">
       <div className="container mx-auto max-w-4xl">
-        
-        {/* Progress Bar & Header */}
         <div className="flex justify-between items-center mb-6 px-2">
             <div className="flex items-center gap-2">
                 <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
@@ -285,10 +308,8 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
             <span className="font-black text-slate-300 text-xl">{currentIndex + 1}<span className="text-sm text-slate-200">/{sentences.length}</span></span>
         </div>
 
-        {/* Main Card */}
         <div className="bg-white rounded-[40px] shadow-xl overflow-hidden border border-slate-100 relative min-h-[500px] flex flex-col">
             
-            {/* Score Badge (Floating) */}
             {result && (
                 <div className="absolute top-6 right-6 animate-in slide-in-from-top-4 fade-in duration-500 z-20">
                     <div className={`px-5 py-2 rounded-full border-[3px] shadow-sm flex items-center gap-2 ${displayScore >= 80 ? 'bg-green-50 border-green-100 text-green-600' : 'bg-yellow-50 border-yellow-100 text-yellow-600'}`}>
@@ -313,7 +334,6 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
                     )}
                 </div>
 
-                {/* Metrics Cards Grid (Compact) */}
                 <AnimatePresence>
                     {result && !isProcessing && (
                         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-lg mt-8 mb-8 grid grid-cols-3 gap-3">
@@ -333,7 +353,6 @@ export default function PronunciationScorer({ sentences, isLocked = false }: Sco
                     )}
                 </AnimatePresence>
 
-                {/* Controls Area */}
                 <div className="w-full flex justify-center items-center h-28 mt-4 relative">
                     {isProcessing ? (
                         <div className="flex flex-col items-center">

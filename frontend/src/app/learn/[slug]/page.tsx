@@ -45,15 +45,14 @@ export default async function LearnPage(props: Props) {
         buttonLink={lesson.buttonLink}
       />
 
-      {/* Phần Testimonial - Đẩy lên chèn vào phần video 1 chút */}
+      {/* Phần Testimonial  */}
       <div className="relative z-20 -mt-8 md:-mt-12 px-4 pb-12">
           <TestimonialCard 
-            imageSrc="/images/FD.jpg" 
-            category="HỌC MÀ CHƠI NGÀY TẾT"
-            content="Kết hợp giữa Âm nhạc và công cụ luyện ngữ âm AI đến từ Microsoft sẽ giúp các con học mà chơi hiệu quả trong những ngày Tết."
-            authorName="Teacher. Mai Linh"
-            authorRole="FOUNDER MOMTEK"
-          />
+  imageSrc="/images/FD.jpg" 
+  secondImageSrc="/images/FD2.jpg"
+  category="HỌC MÀ CHƠI NGÀY TẾT"
+  content="Kết hợp giữa Âm nhạc và công cụ luyện ngữ âm AI đến từ Microsoft sẽ giúp các con học mà chơi hiệu quả trong những ngày Tết."
+/>
       </div>
 
       {/* --- SECTION 2: PRACTICE AREA (Floating Card Style) --- */}
