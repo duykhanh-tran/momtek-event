@@ -64,7 +64,7 @@ export default async function TetHolidayPage() {
 
           <p className="text-sm md:text-lg max-w-2xl leading-relaxed opacity-90 mb-8 font-medium px-2">
             Đừng để Tết làm gián đoạn hứng khởi học tập của con! <br className="hidden md:block" />
-            Cùng <span className="font-bold text-yellow-300">Momtek</span> làm chủ bộ từ vựng Tết qua 12 bài hát kinh điển.
+            Cùng <span className="font-bold text-yellow-300">Thầy Hoàng Đức </span> và <span className="font-bold text-yellow-300">Cô Mai Linh </span> làm chủ bộ từ vựng Tết qua 12 bài hát kinh điển.
           </p>
 
           <div className="flex flex-row justify-center items-start gap-6 md:gap-8 mt-4">
