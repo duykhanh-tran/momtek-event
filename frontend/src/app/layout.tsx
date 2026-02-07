@@ -10,15 +10,15 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://momtek-event-frontend.vercel.app'), 
+  metadataBase: new URL('https://www.momtek.vn'), 
 
-  title: 'Momtek English - Luyện phát âm AI',
-  description: 'Ứng dụng luyện phát âm tiếng Anh thông minh cho mẹ và bé',
+  title: 'Momtek - Tet Song',
+  description: 'Tuyển tập 12 bài hát vui nhộn ngày Tết độc quyền. Học sinh mọi cấp độ nghe, hát, và luyện phát âm với công nghệ đỉnh cao của Microsoft.',
 
   openGraph: {
-    title: 'Momtek English - Luyện phát âm AI',
-    description: 'Ứng dụng luyện phát âm tiếng Anh thông minh cho mẹ và bé',
-    url: 'https://momtek-event-frontend.vercel.app', 
+    title: 'Momtek - Tet Song',
+    description: 'Tuyển tập 12 bài hát vui nhộn ngày Tết độc quyền. Học sinh mọi cấp độ nghe, hát, và luyện phát âm với công nghệ đỉnh cao của Microsoft.',
+    url: 'https://www.momtek.vn', 
     siteName: 'Momtek English',
     images: [
       {
