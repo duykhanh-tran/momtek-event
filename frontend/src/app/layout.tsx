@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     title: 'Momtek - Tet Song',
     description: 'Tuyển tập 12 bài hát vui nhộn ngày Tết độc quyền. Học sinh mọi cấp độ nghe, hát, và luyện phát âm với công nghệ đỉnh cao của Microsoft.',
     url: 'https://www.momtek.vn', 
-    siteName: 'Momtek English',
+    siteName: 'Momtek - Tet Song',
     images: [
       {
         url: '/images/ME-3.png', 
@@ -42,6 +43,7 @@ export default function RootLayout({
     <html lang="vi">
       <body className={`${nunito.variable} font-sans antialiased`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
