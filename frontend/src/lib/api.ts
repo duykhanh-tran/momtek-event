@@ -5,7 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 export const getLessons = async (): Promise<Lesson[]> => {
   try {
-    const res = await axios.get(`${API_URL}/api/lessons`);
+    const res = await axios.get(`${API_URL}/api/lessons?limit=100`);
     return res.data.docs;
   } catch (error) {
     console.error('Error fetching lessons:', error);

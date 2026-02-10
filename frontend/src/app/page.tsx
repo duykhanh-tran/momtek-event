@@ -9,7 +9,6 @@ export const dynamic = 'force-dynamic';
 export default async function TetHolidayPage() {
   const lessons = await getLessons();
 
-  // Cấu hình khung lịch cố định
   const calendarConfig = [
     { date: 0, label: 'Demo' },
     { date: 11, label: 'THỨ 4' },
@@ -80,7 +79,6 @@ export default async function TetHolidayPage() {
 
             {/* Teacher 2: Hoàng Tăng Đức */}
             <div className="flex flex-col items-center gap-2 scale-90 md:scale-100 group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
-              {/* Bạn nhớ thêm ảnh duc.jpg vào thư mục public/images nhé */}
               <TeacherAvatar src="/images/FD2.jpg" alt="Hoàng Tăng Đức" />
               <div className="text-center">
                 <div className="font-bold text-sm md:text-base text-yellow-100">Th. Hoàng Tăng Đức</div>
@@ -137,9 +135,6 @@ export default async function TetHolidayPage() {
                   `}>
                     {day.label}
                   </span>
-
-                   
-
                   <span className={`
                     text-2xl md:text-4xl font-black mb-1 md:mb-2
                     ${!day.isLocked ? 'text-slate-800' : 'text-slate-200'}
