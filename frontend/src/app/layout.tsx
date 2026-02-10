@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: 'Momtek - Tet Song',
     images: [
       {
-        url: '/images/ME-3.png', 
+        url: '/images/ME-3.jpg', 
         width: 1200,
         height: 630,
         alt: 'Momtek English Preview',
