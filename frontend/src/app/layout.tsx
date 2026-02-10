@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
+import Script from "next/script"
 
 const nunito = Nunito({
   subsets: ["latin", "vietnamese"],
@@ -44,6 +45,15 @@ export default function RootLayout({
       <body className={`${nunito.variable} font-sans antialiased`}>
         {children}
         <Analytics />
+        <Script id="microsoft-clarity" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "vf4jsn9isy");
+          `}
+        </Script>
       </body>
     </html>
   );
