@@ -78,7 +78,7 @@ export default async function TetHolidayPage() {
 
             {/* Teacher 2: Mai Linh */}
             <div className="flex flex-col items-center gap-2 scale-90 md:scale-100 group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
-              <TeacherAvatar src="/images/FD.jpg" alt="Mai Linh" />
+              <TeacherAvatar src="/images/FD1.jpg" alt="Mai Linh" />
               <div className="text-center">
                 <div className="font-bold text-sm md:text-base text-yellow-100">Cô Mai Linh</div>
                 <div className="text-[10px] tracking-widest uppercase opacity-75 bg-black/20 px-2 py-0.5 rounded-full mt-1">Founder Momtek</div>

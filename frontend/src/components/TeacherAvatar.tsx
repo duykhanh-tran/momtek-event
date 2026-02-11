@@ -10,7 +10,7 @@ interface TeacherAvatarProps {
 }
 
 export default function TeacherAvatar({ 
-  src = "/images/FD.jpg", 
+  src = "/images/FD1.jpg", 
   alt = "Teacher" 
 }: TeacherAvatarProps) {
   

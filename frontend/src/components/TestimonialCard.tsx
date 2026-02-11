@@ -15,7 +15,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
   imageSrc,
   category = "HỌC MÀ CHƠI NGÀY TẾT",
   content,
-  children, // Nhận nội dung tùy biến từ bên ngoài (Tên, chức vụ...)
+  children, 
   secondImageSrc,
 }) => {
   return (
