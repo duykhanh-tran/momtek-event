@@ -48,7 +48,7 @@ export default async function LearnPage(props: Props) {
       {/* Phần Testimonial  */}
       <div className="relative z-20 -mt-8 md:-mt-12 px-4 pb-12">
           <TestimonialCard 
-  imageSrc="/images/FD.jpg" 
+  imageSrc="/images/FD1.jpg" 
   secondImageSrc="/images/FD3.jpg"
   category="HỌC MÀ CHƠI NGÀY TẾT"
   content="Kết hợp giữa Âm nhạc và công cụ luyện ngữ âm AI đến từ Microsoft sẽ giúp các con học mà chơi hiệu quả trong những ngày Tết."
