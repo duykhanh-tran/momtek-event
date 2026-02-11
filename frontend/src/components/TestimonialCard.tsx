@@ -28,19 +28,6 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
 
         {/* --- KHU VỰC ẢNH (1 HOẶC 2 NGƯỜI) --- */}
         <div className="relative z-10 flex flex-row gap-6 md:gap-10 justify-center items-center mt-2">
-            
-            {/* Người 1 */}
-            <div className="w-20 h-20 md:w-24 md:h-24 relative rounded-full border-[3px] border-yellow-200/30 overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-500 bg-white/5">
-                <Image
-                    src={imageSrc}
-                    alt="Author 1"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                />
-            </div>
-
-            {/* Người 2 (Chỉ hiện nếu có) */}
             {secondImageSrc && (
                 <div className="w-20 h-20 md:w-24 md:h-24 relative rounded-full border-[3px] border-yellow-200/30 overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-500 bg-white/5">
                     <Image
@@ -52,6 +39,16 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
                     />
                 </div>
             )}
+            <div className="w-20 h-20 md:w-24 md:h-24 relative rounded-full border-[3px] border-yellow-200/30 overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-500 bg-white/5">
+                <Image
+                    src={imageSrc}
+                    alt="Author 1"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                />
+            </div>
+            
         </div>
 
         {/* --- KHU VỰC NỘI DUNG --- */}

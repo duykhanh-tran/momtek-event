@@ -67,24 +67,24 @@ export default async function TetHolidayPage() {
           </p>
 
           <div className="flex flex-row justify-center items-start gap-6 md:gap-8 mt-4">
-            
-            {/* Teacher 1: Mai Linh */}
+            {/* Teacher 1: Hoàng Tăng Đức */}
             <div className="flex flex-col items-center gap-2 scale-90 md:scale-100 group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
-              <TeacherAvatar src="/images/FD.jpg" alt="Mai Linh" />
+              <TeacherAvatar src="/images/FD3.jpg" alt="Hoàng Tăng Đức" />
               <div className="text-center">
-                <div className="font-bold text-sm md:text-base text-yellow-100">Teacher. Mai Linh</div>
+                <div className="font-bold text-sm md:text-base text-yellow-100">Thầy Hoàng Tăng Đức</div>
                 <div className="text-[10px] tracking-widest uppercase opacity-75 bg-black/20 px-2 py-0.5 rounded-full mt-1">Founder Momtek</div>
               </div>
             </div>
 
-            {/* Teacher 2: Hoàng Tăng Đức */}
+            {/* Teacher 2: Mai Linh */}
             <div className="flex flex-col items-center gap-2 scale-90 md:scale-100 group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
-              <TeacherAvatar src="/images/FD3.jpg" alt="Hoàng Tăng Đức" />
+              <TeacherAvatar src="/images/FD.jpg" alt="Mai Linh" />
               <div className="text-center">
-                <div className="font-bold text-sm md:text-base text-yellow-100">Th. Hoàng Tăng Đức</div>
+                <div className="font-bold text-sm md:text-base text-yellow-100">Cô Mai Linh</div>
                 <div className="text-[10px] tracking-widest uppercase opacity-75 bg-black/20 px-2 py-0.5 rounded-full mt-1">Founder Momtek</div>
               </div>
             </div>
+
 
           </div>
                 

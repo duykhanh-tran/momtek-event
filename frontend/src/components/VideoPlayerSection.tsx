@@ -113,7 +113,7 @@ const VideoPlayerSection = ({
           <p className="text-white text-[10px] md:text-sm text-center leading-relaxed italic">
             Momtek's Song là kênh Tiktok chuyên các nội dung học tiếng Anh qua bài hát. Vui, đơn giản, hiệu quả.
             <br />
-            Kênh được cô Mai Linh và Thầy Hoàng Tăng Đức thẩm định nội dung.
+            Kênh được Thầy Hoàng Tăng Đức và cô Mai Linh thẩm định nội dung.
           </p>
         </div>
 
