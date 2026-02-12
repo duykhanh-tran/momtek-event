@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Music, ChevronDown, Sparkles, ExternalLink, Star } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Music, ChevronDown, Sparkles, ExternalLink, Star, VolumeX, Volume2, Play } from 'lucide-react';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -13,83 +13,187 @@ interface VideoPlayerProps {
 
 const extractTikTokId = (raw: string): string | null => {
   if (!raw) return null;
-
-  // Most common
   const m1 = raw.match(/\/video\/(\d{10,25})/);
   if (m1?.[1]) return m1[1];
-
-  // Embed variants
   const m2 = raw.match(/\/embed\/v2\/(\d{10,25})/);
   if (m2?.[1]) return m2[1];
-
   const m3 = raw.match(/\/player\/v1\/(\d{10,25})/);
   if (m3?.[1]) return m3[1];
-
-  // Fallback: any long digit sequence that looks like a post id
   const m4 = raw.match(/(\d{10,25})/);
   return m4?.[1] ?? null;
 };
 
 const extractYouTubeId = (url: string): string | null => {
   if (!url) return null;
-
-  // youtu.be/{id}
   const short = url.match(/youtu\.be\/(.+?)(\?|$)/);
   if (short?.[1]) return short[1];
-
-  // youtube.com/watch?v={id}
   const vParam = url.match(/[?&]v=([^&]+)/);
   if (vParam?.[1]) return vParam[1];
-
-  // youtube.com/embed/{id}
   const embed = url.match(/\/embed\/(.+?)(\?|$)/);
   if (embed?.[1]) return embed[1];
-
   return null;
 };
 
-const VideoPlayerSection = ({
-  videoUrl,
-  category,
-  lessonName,
-  lyrics,
-  buttonLink,
-}: VideoPlayerProps) => {
+type TikTokMessage<T = unknown> = {
+  'x-tiktok-player'?: boolean;
+  type?: string;
+  value?: T;
+};
+
+const TT_ORIGIN = 'https://www.tiktok.com';
+const SOUND_PREF_KEY = 'momtek_tiktok_sound_pref'; 
+
+const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink }: VideoPlayerProps) => {
   const [isScriptOpen, setIsScriptOpen] = useState(true);
-  const isTikTok = !!videoUrl && (videoUrl.includes('tiktok.com') || videoUrl.includes('vt.tiktok.com'));
+  // TikTok states
+  const [ttReady, setTtReady] = useState(false);
+  const [ttPlaying, setTtPlaying] = useState(false);
+  const [ttMuted, setTtMuted] = useState(true);
+  // Overlay states
+  const [showTapToPlayOverlay, setShowTapToPlayOverlay] = useState(false);
+  const [wantSound, setWantSound] = useState(false); // persisted user preference (best-effort)
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const playingRef = useRef(false);
+  const isTikTok = useMemo(() => {
+    return !!videoUrl && (videoUrl.includes('tiktok.com') || videoUrl.includes('vt.tiktok.com'));
+  }, [videoUrl]);
 
-  const getEmbedUrl = (url: string) => {
-    if (!url) return '';
+  const isYouTube = useMemo(() => {
+    return !!videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
+  }, [videoUrl]);
 
-    // YouTube
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      const videoId = extractYouTubeId(url);
-      if (!videoId) return '';
-      return `https://www.youtube.com/embed/${videoId}?autoplay=0`;
+  // Load saved preference
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setWantSound(localStorage.getItem(SOUND_PREF_KEY) === '1');
+  }, []);
+
+  const embedSrc = useMemo(() => {
+    if (!videoUrl) return '';
+
+    if (isYouTube) {
+      const id = extractYouTubeId(videoUrl);
+      if (!id) return '';
+      return `https://www.youtube.com/embed/${id}?autoplay=0`;
     }
 
-    // TikTok
-    if (url.includes('tiktok.com') || url.includes('vt.tiktok.com')) {
-      const videoId = extractTikTokId(url);
-
-      if (!videoId) return '';
-
-      // Use the embed player endpoint so users can press Play right on your site
-      return `https://www.tiktok.com/player/v1/${videoId}?controls=1&description=0&music_info=0`;
+    if (isTikTok) {
+      const id = extractTikTokId(videoUrl);
+      if (!id) return '';
+      return `https://www.tiktok.com/player/v1/${id}?controls=1&autoplay=1&description=0&music_info=0`;
     }
 
-    // Fallback (other providers)
-    return url;
+    return videoUrl;
+  }, [videoUrl, isTikTok, isYouTube]);
+
+  const postToTikTok = (msg: TikTokMessage) => {
+    const win = iframeRef.current?.contentWindow;
+    if (!win) return;
+    win.postMessage({ ...msg, 'x-tiktok-player': true }, TT_ORIGIN);
   };
 
-  const embedSrc = getEmbedUrl(videoUrl);
+  const enableSound = (persist = true) => {
+    if (!ttReady) return;
+    // User gesture path: this is what makes sound reliably allowed
+    postToTikTok({ type: 'unMute', value: undefined });
+    postToTikTok({ type: 'play', value: undefined });
+
+    setTtMuted(false);
+    if (persist && typeof window !== 'undefined') {
+      setWantSound(true);
+      localStorage.setItem(SOUND_PREF_KEY, '1');
+    }
+  };
+
+  const handleToggleMute = () => {
+    if (!ttReady) return;
+    if (ttMuted) {
+      enableSound(true);
+    } else {
+      postToTikTok({ type: 'mute', value: undefined });
+      setTtMuted(true);
+    }
+  };
+
+  const handleTapPlay = () => {
+    postToTikTok({ type: 'play', value: undefined });
+    setShowTapToPlayOverlay(false);
+  };
+
+  const handleVideoAreaPointerDown = () => {
+    if (isTikTok && wantSound && ttReady && ttPlaying && ttMuted) {
+      enableSound(false); 
+    }
+  };
+
+  useEffect(() => {
+    // reset when url changes
+    setTtReady(false);
+    setTtPlaying(false);
+    setTtMuted(true);
+    setShowTapToPlayOverlay(false);
+    playingRef.current = false;
+
+    if (!isTikTok) return;
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== TT_ORIGIN) return;
+
+      let data: TikTokMessage | null = null;
+
+      if (typeof event.data === 'string') {
+        try {
+          data = JSON.parse(event.data);
+        } catch {
+          data = null;
+        }
+      } else if (typeof event.data === 'object' && event.data) {
+        data = event.data as TikTokMessage;
+      }
+
+      if (!data || data['x-tiktok-player'] !== true) return;
+
+      if (data.type === 'onPlayerReady') {
+        setTtReady(true);
+
+        // Best-practice autoplay: mute first -> play
+        postToTikTok({ type: 'mute', value: undefined });
+        postToTikTok({ type: 'play', value: undefined });
+        setTtMuted(true);
+
+        // If still not playing shortly after, show "tap to play" overlay
+        window.setTimeout(() => {
+          if (!playingRef.current) setShowTapToPlayOverlay(true);
+        }, 1200);
+      }
+
+      if (data.type === 'onStateChange') {
+        const state = Number(data.value); // -1 init, 0 ended, 1 playing, 2 paused, 3 buffering
+        if (state === 1) {
+          playingRef.current = true;
+          setTtPlaying(true);
+          setShowTapToPlayOverlay(false);
+        } else if (state === 2 || state === 0) {
+          playingRef.current = false;
+          setTtPlaying(false);
+        }
+      }
+
+      if (data.type === 'onMute') {
+        const muted = Boolean(data.value);
+        setTtMuted(muted);
+      }
+    };
+
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTikTok, videoUrl]);
 
   return (
     <section className="pt-20 pb-12 md:pt-24 md:pb-16 relative z-10 w-full bg-gradient-to-b from-[#D93838] to-[#B91C1C] overflow-hidden rounded-b-[40px] md:rounded-b-[60px] shadow-2xl">
-      {/* Background Pattern */}
       <div className="absolute inset-0 bg-[url('/images/ME-2.jpg')] opacity-10 pointer-events-none bg-cover bg-center"></div>
 
-      {/* Decorative Elements */}
       <div className="absolute top-10 left-10 text-white/10 animate-pulse delay-700">
         <Star size={40} fill="currentColor" />
       </div>
@@ -98,7 +202,6 @@ const VideoPlayerSection = ({
       </div>
 
       <div className="container mx-auto px-4 max-w-4xl relative z-10">
-        {/* Header Text */}
         <div className="text-center mb-6 md:mb-10 text-white">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-yellow-200 text-[10px] md:text-xs font-bold uppercase mb-4 shadow-sm">
             <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-yellow-300" />
@@ -109,6 +212,7 @@ const VideoPlayerSection = ({
 
         {/* Video frame */}
         <div
+          onPointerDown={handleVideoAreaPointerDown}
           className={`
             relative shadow-2xl mb-8 bg-black rounded-2xl md:rounded-3xl mx-auto overflow-hidden
             border-[6px] border-white/20
@@ -116,19 +220,59 @@ const VideoPlayerSection = ({
           `}
         >
           {embedSrc ? (
-            <iframe
-              src={embedSrc}
-              className="w-full h-full"
-              scrolling="no"
-              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-              allowFullScreen
-              // TikTok player hay bị hỏng khi sandbox quá chặt → chỉ sandbox với non-TikTok
-              sandbox={isTikTok ? undefined : 'allow-scripts allow-same-origin allow-popups allow-presentation'}
-              title="Video Player"
-              style={{ border: 'none' }}
-            />
+            <>
+              <iframe
+                ref={iframeRef}
+                src={embedSrc}
+                className="w-full h-full"
+                scrolling="no"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+                // TikTok autoplay/control can break with strict sandbox, so we avoid sandbox for TikTok.
+                sandbox={isTikTok ? undefined : 'allow-scripts allow-same-origin allow-popups allow-presentation'}
+                title="Video Player"
+                style={{ border: 'none' }}
+              />
+
+              {/* If autoplay is blocked */}
+              {isTikTok && showTapToPlayOverlay && (
+                <button
+                  type="button"
+                  onClick={handleTapPlay}
+                  className="absolute inset-0 flex items-center justify-center bg-black/35 backdrop-blur-[1px]"
+                >
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#D93838] font-extrabold shadow-xl">
+                    <Play className="w-4 h-4" /> Chạm để phát
+                  </span>
+                </button>
+              )}
+
+              {/* NEW: Sound helper overlay (autoplay sound is blocked by browsers; this makes it 1-tap to enable) */}
+              {isTikTok && ttReady && ttPlaying && ttMuted && !showTapToPlayOverlay && (
+                <button
+                  type="button"
+                  onClick={() => enableSound(true)}
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 text-[#D93838] text-xs md:text-sm font-extrabold shadow-xl hover:bg-white"
+                  title="Chạm để bật tiếng"
+                >
+                  <Volume2 className="w-4 h-4" /> Chạm để bật tiếng
+                </button>
+              )}
+
+              {/* Mute toggle (TikTok only) */}
+              {isTikTok && (
+                <button
+                  type="button"
+                  onClick={handleToggleMute}
+                  className="absolute top-3 right-3 z-10 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/55 text-white text-xs font-bold hover:bg-black/70"
+                  title={ttMuted ? 'Bật tiếng' : 'Tắt tiếng'}
+                >
+                  {ttMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  {ttMuted ? 'Bật tiếng' : 'Tắt tiếng'}
+                </button>
+              )}
+            </>
           ) : (
-            // Fallback UI if cannot build embed URL (e.g. short links not resolved)
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-6 text-center text-white/90">
               <p className="text-sm md:text-base font-semibold">Không thể nhúng video từ link này.</p>
               <p className="text-xs md:text-sm text-white/70">
@@ -156,18 +300,18 @@ const VideoPlayerSection = ({
               target="_blank"
               rel="noopener noreferrer"
               className="
-                  group relative inline-flex items-center justify-center gap-3 
-                  px-8 py-3 md:px-10 md:py-4 text-sm md:text-base font-bold text-[#D93838] transition-all duration-300 
-                  bg-white border-b-4 border-slate-200 rounded-full 
-                  shadow-xl hover:-translate-y-1 hover:shadow-2xl hover:bg-yellow-50
-                "
+                group relative inline-flex items-center justify-center gap-3 
+                px-8 py-3 md:px-10 md:py-4 text-sm md:text-base font-bold text-[#D93838] transition-all duration-300 
+                bg-white border-b-4 border-slate-200 rounded-full 
+                shadow-xl hover:-translate-y-1 hover:shadow-2xl hover:bg-yellow-50
+              "
             >
               <svg
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 className="w-5 h-5 md:w-6 md:h-6 text-[#ff0050] group-hover:animate-pulse"
               >
-                <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z" />
+                <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.6 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z" />
               </svg>
               <span>HÃY FOLLOW KÊNH MOMTEK’S SONG</span>
               <ExternalLink className="w-4 h-4 transition-transform group-hover:translate-x-1" />
