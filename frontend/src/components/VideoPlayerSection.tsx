@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Music, ChevronDown, Sparkles, ExternalLink, Star, VolumeX, Volume2, Play } from 'lucide-react';
+import { Music, ChevronDown, Sparkles, ExternalLink, Star, Volume2, Play } from 'lucide-react';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -41,19 +41,22 @@ type TikTokMessage<T = unknown> = {
 };
 
 const TT_ORIGIN = 'https://www.tiktok.com';
-const SOUND_PREF_KEY = 'momtek_tiktok_sound_pref'; 
 
 const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink }: VideoPlayerProps) => {
   const [isScriptOpen, setIsScriptOpen] = useState(true);
+
   // TikTok states
   const [ttReady, setTtReady] = useState(false);
   const [ttPlaying, setTtPlaying] = useState(false);
   const [ttMuted, setTtMuted] = useState(true);
-  // Overlay states
+
+  // Overlays
   const [showTapToPlayOverlay, setShowTapToPlayOverlay] = useState(false);
-  const [wantSound, setWantSound] = useState(false); // persisted user preference (best-effort)
+  const [showSoundButton, setShowSoundButton] = useState(true); // <-- nút bật tiếng (chỉ hiện 1 lần)
+
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const playingRef = useRef(false);
+
   const isTikTok = useMemo(() => {
     return !!videoUrl && (videoUrl.includes('tiktok.com') || videoUrl.includes('vt.tiktok.com'));
   }, [videoUrl]);
@@ -61,12 +64,6 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
   const isYouTube = useMemo(() => {
     return !!videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'));
   }, [videoUrl]);
-
-  // Load saved preference
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    setWantSound(localStorage.getItem(SOUND_PREF_KEY) === '1');
-  }, []);
 
   const embedSrc = useMemo(() => {
     if (!videoUrl) return '';
@@ -92,38 +89,20 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
     win.postMessage({ ...msg, 'x-tiktok-player': true }, TT_ORIGIN);
   };
 
-  const enableSound = (persist = true) => {
+  const enableSound = () => {
     if (!ttReady) return;
-    // User gesture path: this is what makes sound reliably allowed
+
+    // ✅ Yêu cầu của bạn: bấm là biến mất NGAY
+    setShowSoundButton(false);
+
     postToTikTok({ type: 'unMute', value: undefined });
     postToTikTok({ type: 'play', value: undefined });
-
     setTtMuted(false);
-    if (persist && typeof window !== 'undefined') {
-      setWantSound(true);
-      localStorage.setItem(SOUND_PREF_KEY, '1');
-    }
-  };
-
-  const handleToggleMute = () => {
-    if (!ttReady) return;
-    if (ttMuted) {
-      enableSound(true);
-    } else {
-      postToTikTok({ type: 'mute', value: undefined });
-      setTtMuted(true);
-    }
   };
 
   const handleTapPlay = () => {
     postToTikTok({ type: 'play', value: undefined });
     setShowTapToPlayOverlay(false);
-  };
-
-  const handleVideoAreaPointerDown = () => {
-    if (isTikTok && wantSound && ttReady && ttPlaying && ttMuted) {
-      enableSound(false); 
-    }
   };
 
   useEffect(() => {
@@ -132,6 +111,7 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
     setTtPlaying(false);
     setTtMuted(true);
     setShowTapToPlayOverlay(false);
+    setShowSoundButton(true); // reset nút bật tiếng khi đổi video
     playingRef.current = false;
 
     if (!isTikTok) return;
@@ -156,12 +136,12 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
       if (data.type === 'onPlayerReady') {
         setTtReady(true);
 
-        // Best-practice autoplay: mute first -> play
+        // autoplay ổn định: mute -> play
         postToTikTok({ type: 'mute', value: undefined });
         postToTikTok({ type: 'play', value: undefined });
         setTtMuted(true);
 
-        // If still not playing shortly after, show "tap to play" overlay
+        // Nếu autoplay bị chặn, hiện overlay "Chạm để phát"
         window.setTimeout(() => {
           if (!playingRef.current) setShowTapToPlayOverlay(true);
         }, 1200);
@@ -182,6 +162,8 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
       if (data.type === 'onMute') {
         const muted = Boolean(data.value);
         setTtMuted(muted);
+        // Nếu vì lý do nào đó player đã unmute, cũng ẩn nút luôn
+        if (!muted) setShowSoundButton(false);
       }
     };
 
@@ -212,7 +194,6 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
 
         {/* Video frame */}
         <div
-          onPointerDown={handleVideoAreaPointerDown}
           className={`
             relative shadow-2xl mb-8 bg-black rounded-2xl md:rounded-3xl mx-auto overflow-hidden
             border-[6px] border-white/20
@@ -228,18 +209,17 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
                 scrolling="no"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
-                // TikTok autoplay/control can break with strict sandbox, so we avoid sandbox for TikTok.
                 sandbox={isTikTok ? undefined : 'allow-scripts allow-same-origin allow-popups allow-presentation'}
                 title="Video Player"
                 style={{ border: 'none' }}
               />
 
-              {/* If autoplay is blocked */}
+              {/* Autoplay bị chặn */}
               {isTikTok && showTapToPlayOverlay && (
                 <button
                   type="button"
                   onClick={handleTapPlay}
-                  className="absolute inset-0 flex items-center justify-center bg-black/35 backdrop-blur-[1px]"
+                  className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 backdrop-blur-[1px]"
                 >
                   <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#D93838] font-extrabold shadow-xl">
                     <Play className="w-4 h-4" /> Chạm để phát
@@ -247,28 +227,18 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
                 </button>
               )}
 
-              {/* NEW: Sound helper overlay (autoplay sound is blocked by browsers; this makes it 1-tap to enable) */}
-              {isTikTok && ttReady && ttPlaying && ttMuted && !showTapToPlayOverlay && (
+              {/* ✅ CHỈ 1 NÚT BẬT TIẾNG - NẰM GIỮA - BẤM XONG BIẾN MẤT */}
+              {isTikTok && ttReady && ttPlaying && ttMuted && !showTapToPlayOverlay && showSoundButton && (
                 <button
                   type="button"
-                  onClick={() => enableSound(true)}
-                  className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 text-[#D93838] text-xs md:text-sm font-extrabold shadow-xl hover:bg-white"
-                  title="Chạm để bật tiếng"
+                  onClick={enableSound}
+                  className="absolute inset-0 z-20 flex items-center justify-center bg-black/35 backdrop-blur-[1px]"
+                  title="Bật tiếng"
                 >
-                  <Volume2 className="w-4 h-4" /> Chạm để bật tiếng
-                </button>
-              )}
-
-              {/* Mute toggle (TikTok only) */}
-              {isTikTok && (
-                <button
-                  type="button"
-                  onClick={handleToggleMute}
-                  className="absolute top-3 right-3 z-10 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/55 text-white text-xs font-bold hover:bg-black/70"
-                  title={ttMuted ? 'Bật tiếng' : 'Tắt tiếng'}
-                >
-                  {ttMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                  {ttMuted ? 'Bật tiếng' : 'Tắt tiếng'}
+                  <span className="inline-flex items-center gap-3 px-7 py-3 rounded-full bg-white text-[#D93838] text-sm md:text-base font-extrabold shadow-2xl border border-white/60">
+                    <Volume2 className="w-5 h-5" />
+                    BẬT TIẾNG
+                  </span>
                 </button>
               )}
             </>
@@ -328,7 +298,7 @@ const VideoPlayerSection = ({ videoUrl, category, lessonName, lyrics, buttonLink
         </div>
 
         {/* Lyrics */}
-        <div className="bg-white/95 backdrop-blur rounded-2xl md:rounded-3xl shadow-xl overflow-hidden transition-all duration-300 border border-white/20">
+        <div className="bg-white/95 backdrop-blur rounded-2xl md:rounded-b-3xl shadow-xl overflow-hidden transition-all duration-300 border border-white/20">
           <button
             onClick={() => setIsScriptOpen(!isScriptOpen)}
             className="w-full px-5 py-4 flex items-center justify-between bg-white hover:bg-slate-50 transition border-b border-slate-100"
